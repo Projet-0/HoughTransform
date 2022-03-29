@@ -1,32 +1,46 @@
-from __future__ import division
-import cv2
+#from __future__ import division
+#import cv2
 import numpy as np
 import time
 import math
+import matplotlib.pyplot as plt
+from scipy import ndimage as ndi
+from skimage.util import random_noise
+from skimage import feature
+import skimage.io
+from skimage.color import rgb2gray
+import matplotlib.image as mpimg
+from scipy.ndimage import gaussian_filter
 
 
-original_image = cv2.imread('C:/Users/Tanguy travail/Downloads/Pic1.jpeg',1)
+#original_image = cv2.imread('C:/Users/Tanguy travail/Downloads/Pic1.jpeg',1)
 #gray_image = cv2.imread('Sample_Input.jpg',0)
 
-output = original_image.copy()
+#output = original_image.copy()
 
 #Gaussian Blurring of Gray Image
-blur_image = cv2.GaussianBlur(original_image,(3,3),0)
+#blur_image = cv2.GaussianBlur(original_image,(3,3),0)
 
 #Using OpenCV Canny Edge detector to detect edges
-edged_image = cv2.Canny(blur_image,75,150)
-cv2.imshow('Edged Image', edged_image)
+#edged_image = cv2.Canny(blur_image,75,150)
+#cv2.imshow('Edged Image', edged_image)
 
-print("A")
+#print("A")
 
 start_time = time.time()
 
-pi = 3.14159
+original_image = mpimg.imread('/home/pi/Documents/une-ping-pong.jpeg')
+R,G,B = original_image[:,:,0],original_image[:,:,1],original_image[:,:,2]
+ima = 0.2989*R + 0.5870*G + 0.1140*B
+blured = gaussian_filter(ima, sigma=1)
+
+im = feature.canny(blured, sigma=1, low_threshold = 50, high_threshold = 150)
 
 radi = 50
+pi = 3.14159
 
 Rmin = 50
-Rmax = 500
+Rmax = 150
 
 #cosl = np.zeros(radi)
 #sinl = np.zeros(radi)
@@ -69,7 +83,7 @@ def hough_transform(im): # Transformation d'un image filtre par canny
     k = 0
     for i in range(height):
         for j in range(width):
-            if im[i][j]==255:
+            if im[i][j]!=0:
                 k +=1
                 Cmax = point(tot_array,radi,i,j,Cmax)
     print(Cmax,k)
@@ -82,27 +96,51 @@ def hough_transform2(im):
     k = 0
     for i in range(0,height,4):
         for j in range(0,width,4):
-            if im[i][j]==255:
+            if im[i][j]!=0:
                 k +=1
                 Cmax = point(tot_array,radi,i,j,Cmax)
     print(Cmax,k)
     return(Cmax,k)
 
-Cmax,k = hough_transform2(edged_image)
+Cmax,k = hough_transform2(im)
 for i in range(Cmax[2]):
     original_image[Cmax[0]-Rmax+i][Cmax[1]-Rmax][2] = 255
     original_image[Cmax[0]-Rmax-i][Cmax[1]-Rmax][2] = 255
     original_image[Cmax[0]-Rmax][Cmax[1]-Rmax+i][2] = 255
     original_image[Cmax[0]-Rmax][Cmax[1]-Rmax-i][2] = 255
-cv2.imshow('Identification', original_image)
+    
+for i in range(500):
+    teta = 2*pi*i/500
+    original_image[int(Cmax[0]-Rmax+Cmax[2]*math.cos(teta))][int(Cmax[1]-Rmax+Cmax[2]*math.sin(teta))][2] = 255
+#cv2.imshow('Identification', original_image)
+
+
+fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(8, 3))
+
+ax[0].imshow(original_image)
+ax[0].set_title('Image originalle', fontsize=20)
+
+ax[1].imshow(blured, cmap='gray')
+ax[1].set_title('Image après blur', fontsize=20)
+
+ax[2].imshow(im, cmap='gray')
+ax[2].set_title('Canny', fontsize=20)
+
+for a in ax:
+    a.axis('off')
+
+fig.tight_layout()
 
 
 
-cv2.imshow('Edged Image', edged_image)
+#cv2.imshow('Edged Image', edged_image)
 
 end_time = time.time()
 time_taken = end_time - start_time
 print ('Time taken for execution',time_taken)
 
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+plt.show()
+
+#cv2.waitKey(0)
+#cv2.destroyAllWindows()
+
