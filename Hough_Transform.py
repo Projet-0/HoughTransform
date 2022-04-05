@@ -29,7 +29,9 @@ from scipy.ndimage import gaussian_filter
 
 start_time = time.time()
 
-original_image = mpimg.imread('/home/pi/Documents/une-ping-pong.jpeg')
+# original_image = mpimg.imread('/home/pi/Documents/une-ping-pong.jpeg')
+
+original_image = mpimg.imread('C:/Users/Tanguy travail/Downloads/HoughTransform-main/HoughTransform-main/une-ping-pong.jpeg')
 R,G,B = original_image[:,:,0],original_image[:,:,1],original_image[:,:,2]
 ima = 0.2989*R + 0.5870*G + 0.1140*B
 blured = gaussian_filter(ima, sigma=1)
@@ -41,6 +43,7 @@ pi = 3.14159
 
 Rmin = 50
 Rmax = 150
+height,width,j = original_image.shape
 
 #cosl = np.zeros(radi)
 #sinl = np.zeros(radi)
@@ -103,15 +106,26 @@ def hough_transform2(im):
     return(Cmax,k)
 
 Cmax,k = hough_transform2(im)
+az = np.full((5,5),255)
+print(height, width)
+print(original_image[0:2][0:2][0])
 for i in range(Cmax[2]):
-    original_image[Cmax[0]-Rmax+i][Cmax[1]-Rmax][2] = 255
-    original_image[Cmax[0]-Rmax-i][Cmax[1]-Rmax][2] = 255
-    original_image[Cmax[0]-Rmax][Cmax[1]-Rmax+i][2] = 255
-    original_image[Cmax[0]-Rmax][Cmax[1]-Rmax-i][2] = 255
-    
+    if (Cmax[0]-Rmax+i+2 < width) and (Cmax[0]-Rmax+i-2 >= 0) and (Cmax[1]-Rmax+2 < height) and (Cmax[1]-Rmax-2 >= 0):
+        print(Cmax[0]-Rmax+i+2)
+        original_image[Cmax[0]-Rmax+i-2:Cmax[0]-Rmax+i+2][Cmax[1]-Rmax-2:Cmax[1]-Rmax+2][0] = az
+    if (Cmax[0]-Rmax-i+2 < width) and (Cmax[0]-Rmax-i-2 >= 0) and (Cmax[1]-Rmax+2 < height) and (Cmax[1]-Rmax-2 >= 0):
+        original_image[Cmax[0]-Rmax-i-2:Cmax[0]-Rmax-i+2][Cmax[1]-Rmax-2:Cmax[1]-Rmax+2][0] = az
+    if (Cmax[0]-Rmax+2 < width) and (Cmax[0]-Rmax-2 >= 0) and (Cmax[1]-Rmax+i+2 < height) and (Cmax[1]-Rmax+i-2 >= 0):
+        original_image[Cmax[0]-Rmax-2:Cmax[0]-Rmax+2][Cmax[1]-Rmax+i-2:Cmax[1]-Rmax+i+2][0] = az
+    if (Cmax[0]-Rmax+2 < width) and (Cmax[0]-Rmax-2 >= 0) and (Cmax[1]-Rmax-i+2 < height) and (Cmax[1]-Rmax-i-2 >= 0):
+        print(Cmax[0]-Rmax-2)
+        print(Cmax[1]-Rmax-i-2)
+        original_image[Cmax[0]-Rmax-2:Cmax[0]-Rmax+2,Cmax[1]-Rmax-i-2:Cmax[1]-Rmax-i+2][0] = az
+
 for i in range(500):
     teta = 2*pi*i/500
-    original_image[int(Cmax[0]-Rmax+Cmax[2]*math.cos(teta))][int(Cmax[1]-Rmax+Cmax[2]*math.sin(teta))][2] = 255
+    if int(Cmax[0]-Rmax+Cmax[2]*math.cos(teta))-2 >= 0 and int(Cmax[0]-Rmax+Cmax[2]*math.cos(teta))+2 < width and int(Cmax[1]-Rmax+Cmax[2]*math.sin(teta))-2 >= 0 and int(Cmax[1]-Rmax+Cmax[2]*math.sin(teta))+2 < height:
+        original_image[int(Cmax[0]-Rmax+Cmax[2]*math.cos(teta))-2:int(Cmax[0]-Rmax+Cmax[2]*math.cos(teta))+2][int(Cmax[1]-Rmax+Cmax[2]*math.sin(teta))-2:int(Cmax[1]-Rmax+Cmax[2]*math.sin(teta))+2][2] = 255
 #cv2.imshow('Identification', original_image)
 
 
