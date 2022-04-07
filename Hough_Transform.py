@@ -33,8 +33,8 @@ pi = 3.14159
 Rmin = 10
 Rmax = 150
 
-pasR = 4
-pasXY = 4
+pasR = 1
+pasXY = 1
 
 az = np.full((5,5),255) # Tableau blue de 5*5
 
@@ -49,6 +49,7 @@ def point(arr,radi,x,y,Cmax): # Tranformation d'un point, arr = Accumulation; ra
                 Cmax = [a,b,r,arr[a][b][r]]
             # Variable global du max
     return Cmax
+
 
 def hough_transform(im):
     height,width = im.shape
@@ -100,11 +101,36 @@ def affichage(Cmax):
     
 # Fin boucle
 
+#fonction pour réduire la résolution (travail par zone) qui prendra en argument le seuil, l'"image et le pas
+
+def resize_image(image,seuil,pas, longueur, largeur) :
+    new_image = np.zeros((int(longueur/pas)+1,int(largeur/pas)+1)) #matrice finale, Il faut aussi traiter les bords 
+    
+    for k in range(0,longueur,pas): #on étudie toute l'image avec un 
+        for i in range(0,largeur,pas):
+            stock = 0 #nombre de pixels blanc présent par zone
+            for x in range(pas): #On va parcourir la zone du pas ex : 2*2)
+                for y in range(pas):
+                    if (((k+x) < longueur) and ((i+y) < largeur)): # on teste le dépassement
+                        if image[k+x][i+y] != 0 : # on vérifie que le pixel soit blanc
+                            stock += 1 # on implémente le compteur de blanc
+                             
+            if stock >= seuil: # on vérifie avec le seuil de pixel blanc
+                new_image[int(k/pas)][int(i/pas)] = 1 #on le passe à l'état blanc
+    print('Fin')
+    return new_image        
+                
+                     
+    
+
+
+
+
 
 while True:
 
     camera.start_preview()  #Lance la caméra
-
+    sleep(4)
     camera.capture(link) # A retester : récupération de l'image à partir du str1
 
     camera.stop_preview() #Arrête l'affichage de la camér
@@ -115,8 +141,9 @@ while True:
     blured = gaussian_filter(ima, sigma=1)
 
     im = feature.canny(blured, sigma=1, low_threshold = 50, high_threshold = 150) # Sensibilité du filtre. A regler
-
-    height,width,j = original_image.shape # Taille de l'image
+    height,width,j = original_image.shape
+    im = resize_image(im,2,4, height,width)#Redimensionnement à tester 
+    height,width = im.shape # Taille de l'image
 
     Cmax,k = hough_transform(im)
     
