@@ -17,9 +17,6 @@ from scipy.ndimage import gaussian_filter
 CAMERA = False # Choisir si l'on veut récup les images du pi ou non
 
 
-
-
-
 start_time = time.time()
 
 k = 0
@@ -54,9 +51,9 @@ def setup_tcp(IP,port):
 
 donnees ='' # Donnees transmise
 
-def envoyer(a,b,r,width,heigth):
+def envoyer(a,b,r,width,height):
     a = int(1000*(a/width))/1000
-    b = int(1000*(b/heigth))/1000
+    b = int(1000*(b/height))/1000
     r = int(1000*(r/width))/1000
     donnees = str(a) + ',' + str(b) + ',' + str(r)
     client.send(donnees.encode('utf-8 '))
@@ -149,7 +146,7 @@ def resize_image(image,seuil,pas, longueur, largeur, saut) :
 
 # Début
 
-serveur = setup_tcp('192.168.139.234',2200)
+serveur = setup_tcp('192.168.139.178',2200)
 
 
 while not(donnees=='end\r'):
@@ -175,7 +172,7 @@ while not(donnees=='end\r'):
 
         else:
             link = '/home/pi/Desktop/image0.jpg'
-            link = 'C:/Users/ayoub/Desktop/Projet Electronique/APP3/HoughTransform-main/une-ping-pong.jpeg'
+            #link = 'C:/Users/ayoub/Desktop/Projet Electronique/APP3/HoughTransform-main/une-ping-pong.jpeg'
 
 
         original_image = mpimg.imread(link)
@@ -188,7 +185,7 @@ while not(donnees=='end\r'):
         im = resize_image(im,2,4, height,width,2)#Redimensionnement nouvelle version saut de 2
         height,width = im.shape # Taille de l'image
 
-
+        Cmax,k = hough_transform(im)
     #On réajuste les dimensions de l'image, il faut remultiplier par le pas MAIS il faut faire attention au Rmax
         resize_pas = 4 # C'est le pas du resize
         Cmax[0] = resize_pas*(Cmax[0] - Rmax) + Rmax
@@ -196,17 +193,13 @@ while not(donnees=='end\r'):
         Cmax[2] = resize_pas*Cmax[2]
 
 
-
-
-        Cmax,k = hough_transform(im)
-
         print(Cmax[0]-Rmax, Cmax[1]-Rmax, Cmax[2])
         a = Cmax[0]-Rmax
         b = Cmax[1]-Rmax
         r = Cmax[2]
 
         height,width,j = original_image.shape # On reprend les tailles originalles
-        envoyer(a,b,r,width,heigth)
+        envoyer(a,b,r,width,height)
 
         # affichage(Cmax)
 
