@@ -11,10 +11,16 @@ import skimage.io
 from skimage.color import rgb2gray
 import matplotlib.image as mpimg
 from scipy.ndimage import gaussian_filter
-from picamera import PiCamera
+
 from time import sleep
 
-link = '/home/pi/Desktop/image0.jpg'
+
+
+CAMERA = False # Choisir si l'on veut récup les images du pi ou non 
+
+
+
+
 
 start_time = time.time()
 
@@ -24,8 +30,7 @@ k = 0
 # str1 = ''.join(list1)  #On repasse en format string pour stocker l'image dans la camera
 # print(str1)
 
-camera = PiCamera() #on définit camera comme la caméra de la raspberry
-camera.resolution = (1024,768) #définir la résolution on va devoir rester en 16/9
+
 
 radi = 50
 pi = 3.14159
@@ -103,32 +108,40 @@ def affichage(Cmax):
 
 #fonction pour réduire la résolution (travail par zone) qui prendra en argument le seuil, l'"image et le pas
 
-def resize_image(image,seuil,pas, longueur, largeur) :
-    new_image = np.zeros((int(longueur/pas)+1,int(largeur/pas)+1)) #matrice finale, Il faut aussi traiter les bords 
-    
-    for k in range(0,longueur,pas): #on étudie toute l'image avec un 
+
+def resize_image(image,seuil,pas, longueur, largeur, saut) :
+    new_image = np.zeros((int(longueur/pas)+1,int(largeur/pas)+1)) #matrice finale, Il faut aussi traiter les bords
+
+    for k in range(0,longueur,pas): #on étudie toute l'image avec un
         for i in range(0,largeur,pas):
             stock = 0 #nombre de pixels blanc présent par zone
-            for x in range(pas): #On va parcourir la zone du pas ex : 2*2)
-                for y in range(pas):
+            for x in range(0,pas,saut):     #On va parcourir la zone du pas ex : 2*2)
+                for y in range(0,pas,saut):
                     if (((k+x) < longueur) and ((i+y) < largeur)): # on teste le dépassement
                         if image[k+x][i+y] != 0 : # on vérifie que le pixel soit blanc
-                            stock += 1 # on implémente le compteur de blanc
-                             
-            if stock >= seuil: # on vérifie avec le seuil de pixel blanc
+                            stock += 1 # on implémente le compteur de blanc
+
+            if stock >= seuil: # on vérifie avec le seuil de pixel blanc
                 new_image[int(k/pas)][int(i/pas)] = 1 #on le passe à l'état blanc
     print('Fin')
-    return new_image        
-                
-                     
+    print((int(longueur/pas)+1,int(largeur/pas)+1))
+    return new_image
+
+
+
+while CAMERA == True:
     
-
-
-
-
-
-while True:
-
+    link = '/home/pi/Desktop/image0.jpg'
+    
+    
+    from picamera import PiCamera
+        
+        
+        
+    camera = PiCamera() #on définit camera comme la caméra de la raspberry
+    camera.resolution = (1024,768) #définir la résolution on va devoir rester en 16/9
+    
+    
     camera.start_preview()  #Lance la caméra
     sleep(4)
     camera.capture(link) # A retester : récupération de l'image à partir du str1
@@ -142,14 +155,78 @@ while True:
 
     im = feature.canny(blured, sigma=1, low_threshold = 50, high_threshold = 150) # Sensibilité du filtre. A regler
     height,width,j = original_image.shape
-    im = resize_image(im,2,4, height,width)#Redimensionnement à tester 
+    im = resize_image(im,2,4, height,width,2)#Redimensionnement nouvelle version saut de 2
     height,width = im.shape # Taille de l'image
 
+
+#On réajuste les dimensions de l'image, il faut remultiplier par le pas MAIS il faut faire attention au Rmax 
+    resize_pas = 4 # C'est le pas du resize
+    Cmax[0] = resize_pas*(Cmax[0] - Rmax) + Rmax
+    Cmax[1] = resize_pas*(Cmax[1] - Rmax) + Rmax
+    Cmax[2] = resize_pas*Cmax[2]
+        
+    
+    
+    
     Cmax,k = hough_transform(im)
     
     print(Cmax[0]-Rmax, Cmax[1]-Rmax, Cmax[2])
     
     # affichage(Cmax)
+
+
+#Sans pi
+while CAMERA == False:
+    
+    link = '/home/pi/Desktop/image0.jpg'
+    
+    
+
+    link = 'C:/Users/ayoub/Desktop/Projet Electronique/APP3/HoughTransform-main/une-ping-pong.jpeg'
+
+    #Reste à remodifier les coordonnées *pas pour avoir une image de la bonne taille
+
+    original_image = mpimg.imread(link)
+    R,G,B = original_image[:,:,0],original_image[:,:,1],original_image[:,:,2] # Passage en noir et blanc
+    ima = 0.2989*R + 0.5870*G + 0.1140*B
+    blured = gaussian_filter(ima, sigma=1)
+
+    im = feature.canny(blured, sigma=1, low_threshold = 50, high_threshold = 150) # Sensibilité du filtre. A regler
+    height,width,j = original_image.shape
+
+
+    im = resize_image(im,2,4, height,width,2)#Redimensionnement
+
+
+
+
+    height,width = im.shape # Taille de l'image
+
+
+
+    Cmax,k = hough_transform(im)
+
+#Reste à réadapter les valeurs de Cmax
+
+    pas = 4 # C'est le pas du resize
+    Cmax[0] = pas*(Cmax[0] - Rmax) + Rmax
+    Cmax[1] = pas*(Cmax[1] - Rmax) + Rmax
+    Cmax[2] = pas*Cmax[2]
+
+
+    print(Cmax[0]-Rmax, Cmax[1]-Rmax, Cmax[2])
+
+    affichage(Cmax)
+
+
+end_time = time.time()
+time_taken = end_time - start_time
+print ('Time taken for execution',time_taken)
+
+
+
+
+
 
 
 end_time = time.time()
