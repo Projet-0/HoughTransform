@@ -14,7 +14,7 @@ from scipy.ndimage import gaussian_filter
 
 
 
-CAMERA = False # Choisir si l'on veut récup les images du pi ou non
+CAMERA = True # Choisir si l'on veut récup les images du pi ou non
 
 
 start_time = time.time()
