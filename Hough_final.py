@@ -53,8 +53,8 @@ def point(arr,radi,x,y,Cmax): # Tranformation d'un point, arr = Accumulation; ra
     for r in range(Rmin,Rmax,pasR): # Pas
         for i in range(radi):
             teta = 2*pi*i/radi
-            a = int(Rmax + x + r*math.cos(teta))
-            b = int(Rmax + y + r*math.sin(teta))
+            a = int(Rmax + x + r*m.cos(teta))
+            b = int(Rmax + y + r*m.sin(teta))
             arr[a][b][r] += 1
             if arr[a][b][r]>Cmax[3]:
                 Cmax = [a,b,r,arr[a][b][r]]
@@ -74,7 +74,7 @@ def hough_transform(im):
                 Cmax = point(tot_array,radi,i,j,Cmax)
     return(Cmax,k)
 
-def affichage(Cmax):
+def affichage(Cmax,original_image, blured, im):
 
     for i in range(Cmax[2]):
         if (Cmax[0]-Rmax+i+2 < width) and (Cmax[0]-Rmax+i-2 >= 0) and (Cmax[1]-Rmax+2 < height) and (Cmax[1]-Rmax-2 >= 0):
@@ -88,7 +88,7 @@ def affichage(Cmax):
 
     for i in range(500):
         teta = 2*pi*i/500
-        original_image[int(Cmax[0]-Rmax+Cmax[2]*math.cos(teta))][int(Cmax[1]-Rmax+Cmax[2]*math.sin(teta))][0] = 255
+        original_image[int(Cmax[0]-Rmax+Cmax[2]*m.cos(teta))][int(Cmax[1]-Rmax+Cmax[2]*m.sin(teta))][0] = 255
     #cv2.imshow('Identification', original_image)
 
 
@@ -134,7 +134,7 @@ def resize_image(image,seuil,pas, longueur, largeur, saut) :
     return new_image
 
 def hough_droite(img,pasTheta, nbrMax, original_image):
-    width, height, p = img.shape # En vrai l'inverse mais pur notre axe
+    width, height = img.shape # En vrai l'inverse mais pur notre axe
     print(width)
     Rmax = width+height
     tab = np.zeros((Rmax,360))
@@ -215,19 +215,19 @@ def changementBase(C ,coin, l_droite):
 
 ## Début du code
 
-serveur = setup_tcp('192.168.139.234',2200)
+serveur = setup_tcp('192.168.251.178',2201)
 
 
 while not(donnees=='end\r'):
     client, adresseClient = serveur.accept() #attente d'un client
     print ('Connexion de', adresseClient)
 
+    link = '/home/pi/Desktop/image0.jpg'
+
+    camera = PiCamera() #on définit camera comme la caméra de la raspberry
+    camera.resolution = (1024,768) #définir la résolution on va devoir rester en 16/9
+    
     while not(donnees=='stop\r' or donnees =='end\r'):
-
-        link = '/home/pi/Desktop/image0.jpg'
-
-        camera = PiCamera() #on définit camera comme la caméra de la raspberry
-        camera.resolution = (1024,768) #définir la résolution on va devoir rester en 16/9
 
 
         camera.start_preview()  #Lance la caméra
@@ -242,9 +242,13 @@ while not(donnees=='end\r'):
 
         im = feature.canny(blured, sigma=1, low_threshold = 50, high_threshold = 150) # Sensibilité du filtre. A regler
         height,width,j = original_image.shape
-        im = resize_image(im,2,4, height,width,2)#Redimensionnement nouvelle version saut de 2
+        # im = resize_image(im,1,2, height,width,2)#Redimensionnement nouvelle version saut de 2
         height,width = im.shape # Taille de l'image
 
+        xim, yim = im.shape
+        im = im[2:xim-2,2:yim-2]
+        plt.imshow(im)
+        plt.show()
 
     #On réajuste les dimensions de l'image, il faut remultiplier par le pas MAIS il faut faire attention au Rmax
         #resize_pas = 4 # C'est le pas du resize
@@ -256,19 +260,28 @@ while not(donnees=='end\r'):
 
 
         Cmax,k = hough_transform(im)
+        print("Ok hough cercle")
+        
 
-        l_droite = hough_droite(im,1,2)
-        coin = droite(l_droite,img) # On a les quatres coins de l'image
-
+        l_droite = hough_droite(im,1,2,original_image)
+        print("Ok hough droite")
+        
+        affichage(Cmax,original_image, blured, im)
+        
+        coin = droite(l_droite,im) # On a les quatres coins de l'image
+        print("Ok coin")
+        
         C = [Cmax[0],Cmax[1]]
-
+        C = changementBase(C, coin, l_droite)
+        
         print(C[0]-Rmax, C[1]-Rmax, Cmax[2])
         a = abs(C[0]-Rmax)
         b = abs(C[1]-Rmax)
         r = Cmax[2]
 
+        
         height,width,j = original_image.shape # On reprend les tailles originalles
-        envoyer(a,b,r,width,heigth)
+        envoyer(a,b,r,width,height)
 
         # affichage(Cmax)
 
