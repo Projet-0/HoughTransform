@@ -25,7 +25,7 @@ def H(i,j,k,sigma):
 ## Gradient d'intensité
 
 
-theta_rad = theta/np.pi
+
 
 
 q = 255
@@ -89,33 +89,45 @@ def double_threshold(s1,s2,Z,width,height): #on testera avec 0.04 et 0.8
 
     return Z
 
+def threshold(img, sinf=0.05, ssup=0.09):
+
+    Sinf = 255*sinf
+    Ssup = 255*ssup
+
+    [M,N] = np.shape(img)
+
+    for i in range(M):
+        for j in range(N):
+            if (img[i][j] < Sinf):
+                img[i][j] = 0
+            if (img[i][j] > Ssup):
+                img[i][j] = 255
+
+            else:
+                img[i][j] == 127
+
+    return img
+
+
+def hysteresis(img, weak, strong=255):
+    M, N = np.shape(img)
+    for i in range(1, M-1):
+        for j in range(1, N-1):
+            if (img[i,j] == weak):
+
+                if ((img[i+1, j-1] == strong) or (img[i+1, j] == strong) or (img[i+1, j+1] == strong)
+                or (img[i, j-1] == strong) or (img[i, j+1] == strong)
+                or (img[i-1, j-1] == strong) or (img[i-1, j] == strong) or (img[i-1, j+1] == strong)):
+                        img[i, j] = strong
+                else:
+                        img[i, j] = 0
+    return img
 
 
 
 
-#
-# def threshold(img, lowThresholdRatio=0.05, highThresholdRatio=0.09):
-#
-#     highThreshold = img.max() * highThresholdRatio; # on se ramène entre 0 et 1
-#     lowThreshold = highThreshold * lowThresholdRatio;
-#
-#     M, N = img.shape
-#     res = np.zeros((M,N))
-#
-#     weak = 25
-#     strong = 255
-#
-#     strong_i, strong_j = np.where(img >= highThreshold)
-#     zeros_i, zeros_j = np.where(img < lowThreshold)
-#
-#     weak_i, weak_j = np.where((img <= highThreshold) & (img >= lowThreshold))
-#
-#     res[strong_i, strong_j] = strong
-#     res[weak_i, weak_j] = weak
-#
-#     return (res, weak, strong)
 
-
+start_time = time.time()
 # Partie test
 link = 'C:/Users/ayoub/Desktop/Projet Electronique/CannyFilter/une-ping-pong.jpeg'
 img = mpimg.imread(link) #On récupère l'image
@@ -149,9 +161,9 @@ print(H)
 Iint = scipy.ndimage.convolve(img_gray, H, mode='constant', cval=0.0) #Image filtrée
 
 
-plt.imshow(img_gray, cmap='gray') #Image  filtrée
-plt.title('Test image1 normalement fitlrée noir et blanc')
-plt.show()
+# plt.imshow(img_gray, cmap='gray') #Image  filtrée
+# plt.title('Test image1 normalement fitlrée noir et blanc')
+# plt.show()
 
 
 Ix = np.array([[-1,0,1],[-2,0,2],[-1,0,1]]) #Gradient selon x
@@ -167,11 +179,13 @@ G = np.hypot(Gradx,Grady)
 G = G/ G.max()  * 255 #on réajuste ses valeurs
 
 
-plt.imshow(G, cmap='gray') #Image  filtrée
-plt.title('Test image1 normalement fitlrée noir et blanc')
-plt.show()
+# plt.imshow(G, cmap='gray') #Image  filtrée
+# plt.title('Test image1 normalement fitlrée noir et blanc')
+# plt.show()
 
 theta = np.arctan2(Grady,Gradx)  #on récup l'angle pour la transfo
+
+theta_rad = theta/np.pi
 
 
 
@@ -179,12 +193,15 @@ theta = np.arctan2(Grady,Gradx)  #on récup l'angle pour la transfo
 
 A = grad_intensity(G,M,N)
 
-plt.imshow(A, cmap='gray') #Image  filtrée
-plt.title('Test image1 Gradient d intensité ')
-plt.show()
+# plt.imshow(A, cmap='gray') #Image  filtrée
+# plt.title('Test image1 Gradient d intensité ')
+# plt.show()
 
 
-# B = threshold(A,0.05,0.09)
+B = threshold(A,0.12,0.09)
+
+
+
 
 
 # plt.imshow(B, cmap='gray') #Image  filtrée
@@ -192,3 +209,13 @@ plt.show()
 # plt.show()
 
 
+C = hysteresis(B,50,255)
+
+# plt.imshow(C, cmap='gray') #Image  filtrée
+# plt.title('Test après hysterisis')
+# plt.show()
+
+
+end_time = time.time()
+time_taken = end_time - start_time
+print ('Time taken for execution',time_taken)
