@@ -33,40 +33,37 @@ r = 255
 
 
 # On va parcourir les dimensions
-def grad_intensity(img,width,height):
+def grad_intensity(img,width,height, angle):
     A = [width, height]
     Z = np.zeros(A)
+    atheta = angle
     for i in range(0,width-1):
         for j in range(0,height-1):
+            a = atheta[i,j]
             q = 255
             r = 255
-            if (theta[i,j] <= 22.5 or theta[i,j] >=157.5):  # On fixe un angle de zéro degrés
+            if (0 <= a < 22.5) or (157.5 <= a <= 180):
                 q = img[i, j+1]
-                r = img[i,j-1]
-            #quand on a une ligne on a ca
+                r = img[i, j-1]
+            #angle 45
+            elif (22.5 <= a < 67.5):
+                q = img[i+1, j-1]
+                r = img[i-1, j+1]
+            #angle 90
+            elif (67.5 <= a < 112.5):
+                q = img[i+1, j]
+                r = img[i-1, j]
+            #angle 135
+            elif (112.5 <= a  < 157.5):
+                q = img[i-1, j-1]
+                r = img[i+1, j+1]
 
-
-            if (theta[i,j] >= 22.5 and  theta > 67.5): # On fixe un angle de 45 degrés
-                q = img[i+1,j-1]
-                r = img[i-1,j+1]
-
-
-
-
-            if (theta[i,j] <= 67.5 or theta[i,j] < 112.5):  # # On fixe un angle de 90 degrés
-                q = img[i+1,j]
-                r = img[i-1,j]
-
-
-            if (theta[i,j] <= 67.5 or theta[i,j] < 112.5):   # On fixe un angle de 135 degrés
-                q = img[i-1,j+1]
-                r = img[i-1,j-1]
-
-
-            if (img[i,j] >=  q and (img[i,j] >= r )): # on vérifie
+            if (img[i,j] >= q) and (img[i,j] >= r):
                 Z[i,j] = img[i,j]
             else:
                 Z[i,j] = 0
+
+
 
     return Z
 
@@ -89,15 +86,21 @@ def double_threshold(s1,s2,Z,width,height): #on testera avec 0.04 et 0.8
 
     return Z
 
+# Faire un atableau avec 3 éléments, les coordonnées et la valeur on va parcourir ce qui est non nul
+
 def threshold(img, sinf=0.05, ssup=0.09):
 
     Sinf = 255*sinf
     Ssup = 255*ssup
 
+
+
     [M,N] = np.shape(img)
 
     for i in range(M):
         for j in range(N):
+            a = img[i][j]
+
             if (img[i][j] < Sinf):
                 img[i][j] = 0
             if (img[i][j] > Ssup):
@@ -148,6 +151,9 @@ img1 = np.zeros((M,N))
 rgb_weights = [ 0.2989 , 0.5870, 0.1140]
 img_gray = np.dot(img[...,:3],rgb_weights)
 
+# 0.06 s
+
+
 
 # plt.imshow(img_gray, cmap='gray') #Image  filtrée
 # plt.title('Test image1 normalement en noir et blanc')
@@ -174,9 +180,13 @@ Gradx = scipy.ndimage.convolve(img_gray, Ix, mode='constant', cval=0.0)
 Grady = scipy.ndimage.convolve(img_gray, Iy, mode='constant', cval=0.0)
 
 
+
 G = np.hypot(Gradx,Grady)
 
 G = G/ G.max()  * 255 #on réajuste ses valeurs
+
+#0.1 s
+
 
 
 # plt.imshow(G, cmap='gray') #Image  filtrée
@@ -185,22 +195,32 @@ G = G/ G.max()  * 255 #on réajuste ses valeurs
 
 theta = np.arctan2(Grady,Gradx)  #on récup l'angle pour la transfo
 
-theta_rad = theta/np.pi
+
+angle = theta # on récupère les angles
+
+# theta_rad = theta/np.pi
 
 
 
 
 
-A = grad_intensity(G,M,N)
+A = grad_intensity(G,M,N,angle)
+
+#2.3
+
 
 # plt.imshow(A, cmap='gray') #Image  filtrée
 # plt.title('Test image1 Gradient d intensité ')
 # plt.show()
 
 
-B = threshold(A,0.12,0.09)
+B = threshold(A,0.04,0.09)
 
 
+
+end_time = time.time()
+time_taken = end_time - start_time
+print ('Time taken for execution',time_taken)
 
 
 
@@ -209,13 +229,9 @@ B = threshold(A,0.12,0.09)
 # plt.show()
 
 
-C = hysteresis(B,50,255)
+C = hysteresis(B,20,255)
 
-# plt.imshow(C, cmap='gray') #Image  filtrée
-# plt.title('Test après hysterisis')
-# plt.show()
+plt.imshow(C, cmap='gray') #Image  filtrée
+plt.title('Test après hysterisis')
+plt.show()
 
-
-end_time = time.time()
-time_taken = end_time - start_time
-print ('Time taken for execution',time_taken)
