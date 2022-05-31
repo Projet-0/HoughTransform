@@ -75,7 +75,7 @@ def grad_intensity(img,width,height):
 
 
 
-def double_threshold(s1,s2,I,width,height): #on testera avec 0.04 et 0.8
+def double_threshold(s1,s2,Z,width,height): #on testera avec 0.04 et 0.8
     for i in range(0,width):
         for j in range(0,height):
             if (Z[i][j] < s1 ):
@@ -93,27 +93,27 @@ def double_threshold(s1,s2,I,width,height): #on testera avec 0.04 et 0.8
 
 
 
-
-def threshold(img, lowThresholdRatio=0.05, highThresholdRatio=0.09):
-
-    highThreshold = img.max() * highThresholdRatio;
-    lowThreshold = highThreshold * lowThresholdRatio;
-
-    M, N = img.shape
-    res = np.zeros((M,N), dtype=np.int32)
-
-    weak = np.int32(25)
-    strong = np.int32(255)
-
-    strong_i, strong_j = np.where(img >= highThreshold)
-    zeros_i, zeros_j = np.where(img < lowThreshold)
-
-    weak_i, weak_j = np.where((img <= highThreshold) & (img >= lowThreshold))
-
-    res[strong_i, strong_j] = strong
-    res[weak_i, weak_j] = weak
-
-    return (res, weak, strong)
+#
+# def threshold(img, lowThresholdRatio=0.05, highThresholdRatio=0.09):
+#
+#     highThreshold = img.max() * highThresholdRatio; # on se ramène entre 0 et 1
+#     lowThreshold = highThreshold * lowThresholdRatio;
+#
+#     M, N = img.shape
+#     res = np.zeros((M,N))
+#
+#     weak = 25
+#     strong = 255
+#
+#     strong_i, strong_j = np.where(img >= highThreshold)
+#     zeros_i, zeros_j = np.where(img < lowThreshold)
+#
+#     weak_i, weak_j = np.where((img <= highThreshold) & (img >= lowThreshold))
+#
+#     res[strong_i, strong_j] = strong
+#     res[weak_i, weak_j] = weak
+#
+#     return (res, weak, strong)
 
 
 # Partie test
@@ -179,10 +179,16 @@ theta = np.arctan2(Grady,Gradx)  #on récup l'angle pour la transfo
 
 A = grad_intensity(G,M,N)
 
-
 plt.imshow(A, cmap='gray') #Image  filtrée
-plt.title('Test image après le gradient d intensité ')
+plt.title('Test image1 Gradient d intensité ')
 plt.show()
 
+
+# B = threshold(A,0.05,0.09)
+
+
+# plt.imshow(B, cmap='gray') #Image  filtrée
+# plt.title('Test image1 seuillage')
+# plt.show()
 
 
