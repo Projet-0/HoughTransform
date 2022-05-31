@@ -34,8 +34,8 @@ def hough_droite(img,pasTheta, nbrMax):
     print("Nombre", nb)
             
     print(np.amax(tab))
-    plt.imshow(tab)
-    plt.show()
+    #plt.imshow(tab)
+    #plt.show()
     ldroite = []
     while (len(ldroite) != 2):
         maxI,maxJ,max = 0,0,0
@@ -87,7 +87,7 @@ camera.resolution = (1365,768) #définir la résolution on va devoir rester en 1
 
 
 camera.start_preview()  #Lance la caméra
-#camera.capture(link) # A retester : récupération de l'image à partir du str1
+camera.capture(link) # A retester : récupération de l'image à partir du str1
 
 camera.stop_preview()
 
@@ -111,15 +111,24 @@ img[:,:,2] = im[2:766,2:1363]
 l_droite = hough_droite(img,1,2)
 
 def droite(l_droite,im_H): # Détermine quelles droites se coupent
-    coin = []
     x = (l_droite[0][1] - l_droite[1][1])/(l_droite[1][0] - l_droite[0][0])
     y = l_droite[0][0]*x + l_droite[0][1]
-    coin.append([int(x),int(y)])
+    coin = [int(x),int(y)] # La petite droite (haut) arrive en premier (axe y)
     return coin
 
-
+def changementBase(C ,coin, l_droite):
+    C[0] -= coin[1] # Car on inverse x et y
+    C[1] -= coin[0]
+    theta = m.atan(l_droite[0][0]) # On met -1 car erreur d'axe et encore -1 car angle négatif
+    x = C[0]*m.cos(theta) - C[1]*m.sin(theta)
+    y = C[0]*m.sin(theta) + C[1]*m.cos(theta)
+    C[0] = x
+    C[1] = y
+    return C
 
 
 coin = droite(l_droite,img) # On a les quatres coins de l'image
 print(coin)
+C = [550,650]
 
+print(changementBase(C, coin, l_droite))
