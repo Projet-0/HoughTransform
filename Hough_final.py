@@ -44,9 +44,12 @@ donnees ='' # Donnees transmise
 def envoyer(a,b,r,width,heigth):
     a = int(1000*(a/width))/1000
     b = int(1000*(b/heigth))/1000
-    r = int(1000*(r/width))/1000
-    donnees = str(a) + ',' + str(b) + ',' + str(r)
+    r = int(1000*(r/width))/1000 # R dépend de l'axe X
+    donnees = str(a) + ',' + str(b) + ',' + str(r) # Sur l'appli x et y sont inverser
     client.send(donnees.encode('utf-8 '))
+    sleep(1)
+    donnees = client.recv(1024)
+    donnees = donnees.decode('utf-8')
 
 
 def point(arr,radi,x,y,Cmax): # Tranformation d'un point, arr = Accumulation; radi = Nombre d'angle; x,y = Coordonées
@@ -219,6 +222,7 @@ serveur = setup_tcp('192.168.251.178',2201)
 
 
 while not(donnees=='end\r'):
+    donnees = ''
     client, adresseClient = serveur.accept() #attente d'un client
     print ('Connexion de', adresseClient)
 
@@ -226,14 +230,14 @@ while not(donnees=='end\r'):
 
     camera = PiCamera() #on définit camera comme la caméra de la raspberry
     camera.resolution = (1024,768) #définir la résolution on va devoir rester en 16/9
-    
+
     while not(donnees=='stop\r' or donnees =='end\r'):
 
 
         camera.start_preview()  #Lance la caméra
         camera.capture(link) # A retester : récupération de l'image à partir du str1
 
-        camera.stop_preview() #Arrête l'affichage de la camér
+        camera.stop_preview() #Arrête l'affichage de la caméra
 
         original_image = mpimg.imread(link)
         R,G,B = original_image[:,:,0],original_image[:,:,1],original_image[:,:,2] # Passage en noir et blanc
@@ -241,7 +245,6 @@ while not(donnees=='end\r'):
         blured = gaussian_filter(ima, sigma=1)
 
         im = feature.canny(blured, sigma=1, low_threshold = 50, high_threshold = 150) # Sensibilité du filtre. A regler
-        height,width,j = original_image.shape
         # im = resize_image(im,1,2, height,width,2)#Redimensionnement nouvelle version saut de 2
         height,width = im.shape # Taille de l'image
 
@@ -261,26 +264,26 @@ while not(donnees=='end\r'):
 
         Cmax,k = hough_transform(im)
         print("Ok hough cercle")
-        
+
 
         l_droite = hough_droite(im,1,2,original_image)
         print("Ok hough droite")
-        
+
         affichage(Cmax,original_image, blured, im)
-        
-        coin = droite(l_droite,im) # On a les quatres coins de l'image
+
+        coin = droite(l_droite,im) # On a le coin s de l'image
         print("Ok coin")
-        
-        C = [Cmax[0],Cmax[1]]
+
+        C = [Cmax[0]-Rmax,Cmax[1]-Rmax] # On supprime Rmax avant
         C = changementBase(C, coin, l_droite)
-        
-        print(C[0]-Rmax, C[1]-Rmax, Cmax[2])
-        a = abs(C[0]-Rmax)
-        b = abs(C[1]-Rmax)
+
+        print(C[0], C[1], Cmax[2])
+        a = abs(C[0])
+        b = abs(C[1])
         r = Cmax[2]
 
-        
-        height,width,j = original_image.shape # On reprend les tailles originalles
+
+        height,width = im.shape # On reprend les tailles originalles
         envoyer(a,b,r,width,height)
 
         # affichage(Cmax)
