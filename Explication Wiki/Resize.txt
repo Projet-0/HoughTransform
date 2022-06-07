@@ -1,0 +1,5 @@
+Le traitement de l'image étant assez long, nous avons décidé de redimensionner l'image via la fonction resize.
+L'image est alors séparée en zones d'études (nommées "pas"), et chaque zones est parcourue par un saut. On fixe également
+seuil, ce qui nous permet de transformer une zone en un seul et unique pixel blanc si le nombre de pixel blanc de la zone 
+est supérieur au seuil.
+Cette fonction prend en argument : image, saut, pas, seuil.

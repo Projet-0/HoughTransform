@@ -1,0 +1,38 @@
+
+Après le passage de l'image en noir et blanc nous allons appliquer un filtre de Canny
+
+Le filtre de Canny nous permet de traiter l'image avant d'appliquer la transformée de Hough.
+Le filtre de Canny réalise plusieurs opérations :
+	-Filtre Gaussien (Filtre passe-bas)
+	-Filtre Gradient
+	-Suppression des non maximums
+	-Filtre seuillage
+	-Filtre hystérisis
+
+1)Filtre Gaussien
+
+Le filtre Gaussien est un filtre passe bas qui nous permet de "lisser" l'image. Cette opération nous permet d'effacer 
+les légères imperfections pour avoir un meilleur résultat après le passage du filtre Gradient.
+Nous devons convoluer l'image avec un filtre Gaussien. Pour cela nous avons utilisé le filtre Gaussien de la bibliothèque
+scipy.
+
+2)Filtre Gradient
+
+Le filtre Gradient est un filtre passe haut qui nous permet de déterminer les contours d'un objet, il nous permettra ici de bien distinguer les contours de la balle à étudier
+
+3) Suppression des non-maximums
+
+Une fois l'image traitée nous avons donc plusieurs niveau de gris (NG) présent sur l'image, mais cela nous pose problème pour appliquer la transformée de Hough. 
+Pour affiner l'image nous faisons une suppression des non-maximums, cela signifie que pour chaque pixel à étudier, nous allons le comparer avec ces voisins. 
+On discrétise spatialement l'espace en différentes zones, et en fonction de de l'angle du contour, nous aurons des affectations et comparaisons différentes.
+
+4) Filtre Double Seuillage
+Ensuite on applique un filtre à 3 NG
+
+5) Filtre hystérisis
+
+Ce filtre nous permet de fixer uniquement deux niveaux de gris, le blanc (NG = 255) et le noir (NG = 0)
+Pour cela nous devons fixer deux seuils (s1,s2).
+Si un NG de l'image se trouve inférieur au seuil s1, le pixel devient noir.
+Si un NG de l'image se trouve supérieur au seuil s2, le pixel devient blanc.
+Si un NG de l'image se trouve compris entre les seuils s1 et s2, on compare les NG de ses voisins et s'il a un NG > S2 il devient à son tour un pixel blanc, sinon il devient noir
