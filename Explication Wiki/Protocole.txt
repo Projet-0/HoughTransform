@@ -3,7 +3,7 @@ en deux parties : Une partie client et une partie serveur
 
 Partie Client : Smartphone 
 Nous utilisons le module Client Socket AI2 créé Par Jean Rodolphe Letert (utilisé dans l'application App Inventor)
-Le smartphone doit fixer un port pour établir la communication avec le raspberry
+Le smartphone doit fixer un port pour établir la communication avec le raspberry ainsi que son adresse IP
 Il reçoit les paramètres de la balle et a la possibilité de fermer/déconnecter le serveur. 
 
 Partie Serveur : Raspberry
