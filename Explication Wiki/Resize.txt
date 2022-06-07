@@ -1,5 +1,7 @@
 Le traitement de l'image étant assez long, nous avons décidé de redimensionner l'image via la fonction resize.
-L'image est alors séparée en zones d'études (nommées "pas"), et chaque zones est parcourue par un saut. On fixe également
+L'image est alors séparée en zones d'études (nommées "pasResize"), et chaque zones est parcourue par un saut. On fixe également
 seuil, ce qui nous permet de transformer une zone en un seul et unique pixel blanc si le nombre de pixel blanc de la zone 
 est supérieur au seuil.
-Cette fonction prend en argument : image, saut, pas, seuil.
+Cette fonction prend en argument : image, seuilResize,  pasResize, sautResize.
+Nous avons pris la configuration (seuilResize =2 , pasResize =1 ,sautResize = 1), cette configuration est suffisamment rapide et assez précise
+pour que la transformée de Hough puisse détecter le centre.  
