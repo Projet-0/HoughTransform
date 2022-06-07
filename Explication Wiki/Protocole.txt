@@ -1,0 +1,12 @@
+L'envoi de données s'effectue entre le Raspberry et le smartphone au travers du protocole TCP/IP. On décompose le système
+en deux parties : Une partie client et une partie serveur
+
+Partie Client : Smartphone 
+Nous utilisons le module Client Socket AI2 créé Par Jean Rodolphe Letert (utilisé dans l'application App Inventor)
+Le smartphone doit fixer un port pour établir la communication avec le raspberry
+Il reçoit les paramètres de la balle et a la possibilité de fermer/déconnecter le serveur. 
+
+Partie Serveur : Raspberry
+Les données sont envoyés de la partie serveur 
+Le Raspberry doit connaître le port utilisé par le smartphone ainsi que son adresse IP.
+Nous utilisons la bibliothèque Socket pour communiquer avec la partie Client.
