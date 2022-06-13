@@ -1,0 +1,3 @@
+Une fois que les paramètres de la balles ont étés déterminés, il reste à savoir quelle est la position relative de la balle
+selon le repère dessiné, pour pouvoir l'afficher sur le smartphone. On projette alors les coordonnées dans le nouveau repère
+
